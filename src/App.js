@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import twitterLogo from './assets/twitter-logo.svg';
 import './App.css';
 import { Connection, PublicKey, clusterApiUrl } from '@solana/web3.js';
@@ -196,27 +196,29 @@ const App = () => {
     })
   }, [])
 
+  const getGifList = useCallback( async () => {
+    
+    try {
+      const provider = getProvider();
+      const program = new Program(idl, programID, provider);
+      const account = await program.account.baseAccount.fetch(baseAccount.publicKey);
+      
+      console.log("Got the account", account)
+      setGifList(account.gifList)
+  
+    } catch (error) {
+      console.log("Error in getGifs: ", error)
+      setGifList(null);
+    }
+
+  }, [])
   
   useEffect(() => {
     if (walletAddress) {
       console.log('Fetching GIF list...');
-      const getGifList = async() => {
-        try {
-          const provider = getProvider();
-          const program = new Program(idl, programID, provider);
-          const account = await program.account.baseAccount.fetch(baseAccount.publicKey);
-          
-          console.log("Got the account", account)
-          setGifList(account.gifList)
-      
-        } catch (error) {
-          console.log("Error in getGifs: ", error)
-          setGifList(null);
-        }
-      }
       getGifList()
     }
-  }, [walletAddress]);
+  }, [walletAddress, getGifList]);
 
   return (
     <div className="App">
